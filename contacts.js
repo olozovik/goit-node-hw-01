@@ -6,10 +6,10 @@ const contactsPath = path.join(__dirname, 'db', 'contacts.json');
 // Получаем и выводим весь список контактов в виде таблицы (console.table)
 const listContacts = async () => {
   try {
-    const data = await fs.readFile(contactsPath, 'utf8');
-    return JSON.parse(data);
+    const contacts = await fs.readFile(contactsPath);
+    return JSON.parse(contacts);
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
@@ -20,29 +20,34 @@ const getContactById = async contactId => {
     return;
   }
   try {
-    const data = await listContacts();
-    return data.find(item => item.id === contactId);
+    const contacts = await listContacts();
+    const contact = contacts.find(item => item.id === contactId);
+    if (!contact) {
+      return null;
+    }
+    return contact;
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
 // Удаляем контакт
 const removeContact = async contactId => {
   if (!contactId) {
-    console.warn('Enter user ID');
+    console.warn('Id is not passed');
     return;
   }
   try {
-    const data = await listContacts();
-    const newContacts = data.filter(({ id }) => id !== contactId);
-    if (data.length === newContacts.length) {
-      return 'There is no such contact';
+    const contacts = await listContacts();
+    const contact = contacts.find(item => item.id === contactId);
+    if (!contact) {
+      return null;
     }
-    await fs.writeFile(contactsPath, JSON.stringify(newContacts), 'utf8');
-    return await listContacts();
+    const newContacts = contacts.filter(({ id }) => id !== contactId);
+    await fs.writeFile(contactsPath, JSON.stringify(newContacts));
+    return contact;
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
@@ -54,21 +59,26 @@ const getNewId = async () => {
     await fs.writeFile(idsPath, String(newId), 'utf8');
     return newId;
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
 // Добавялем контакт
 const addContact = async (name, email, phone) => {
   if (!name || !email || !phone) {
-    console.warn('Enter valid values');
+    console.warn('Valid values are not passed');
     return;
   }
-  const id = await getNewId();
-  const data = await listContacts();
-  data.push({ id, name, email, phone });
-  await fs.writeFile(contactsPath, JSON.stringify(data), 'utf8');
-  return await listContacts();
+  try {
+    const id = await getNewId();
+    const contacts = await listContacts();
+    const newContact = { id, name, email, phone };
+    contacts.push(newContact);
+    await fs.writeFile(contactsPath, JSON.stringify(contacts));
+    return newContact;
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 module.exports = { listContacts, getContactById, removeContact, addContact };

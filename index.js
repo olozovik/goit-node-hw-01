@@ -28,11 +28,11 @@ function invokeAction({ action, id, name, email, phone }) {
       break;
 
     case 'add':
-      addContact(name, email, phone).then(console.table);
+      addContact(name, email, phone).then(console.log);
       break;
 
     case 'remove':
-      removeContact(Number(id)).then(console.table);
+      removeContact(Number(id)).then(console.log);
       break;
 
     default:
@@ -40,4 +40,6 @@ function invokeAction({ action, id, name, email, phone }) {
   }
 }
 
-invokeAction(argv);
+(async () => {
+  await invokeAction(argv);
+})();
