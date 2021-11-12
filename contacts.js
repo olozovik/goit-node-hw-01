@@ -15,6 +15,10 @@ const listContacts = async () => {
 
 // Получаем контакт по id
 const getContactById = async contactId => {
+  if (!contactId) {
+    console.warn('Enter user ID');
+    return;
+  }
   try {
     const data = await listContacts();
     return data.find(item => item.id === contactId);
@@ -25,6 +29,10 @@ const getContactById = async contactId => {
 
 // Удаляем контакт
 const removeContact = async contactId => {
+  if (!contactId) {
+    console.warn('Enter user ID');
+    return;
+  }
   try {
     const data = await listContacts();
     const newContacts = data.filter(({ id }) => id !== contactId);
@@ -40,12 +48,22 @@ const removeContact = async contactId => {
 
 //Получаем новый уникальный Id
 const getNewId = async () => {
-  const data = await listContacts();
-  return data[data.length - 1].id + 1;
+  try {
+    const idsPath = path.join(__dirname, 'db', 'ids.txt');
+    const newId = Number(await fs.readFile(idsPath, 'utf8')) + 1;
+    await fs.writeFile(idsPath, String(newId), 'utf8');
+    return newId;
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 // Добавялем контакт
 const addContact = async (name, email, phone) => {
+  if (!name || !email || !phone) {
+    console.warn('Enter valid values');
+    return;
+  }
   const id = await getNewId();
   const data = await listContacts();
   data.push({ id, name, email, phone });
