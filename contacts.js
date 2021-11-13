@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
 
 const contactsPath = path.join(__dirname, 'db', 'contacts.json');
 
@@ -51,18 +52,6 @@ const removeContact = async contactId => {
   }
 };
 
-//Получаем новый уникальный Id
-const getNewId = async () => {
-  try {
-    const idsPath = path.join(__dirname, 'db', 'ids.txt');
-    const newId = Number(await fs.readFile(idsPath, 'utf8')) + 1;
-    await fs.writeFile(idsPath, String(newId), 'utf8');
-    return newId;
-  } catch (err) {
-    console.error(err);
-  }
-};
-
 // Добавялем контакт
 const addContact = async (name, email, phone) => {
   if (!name || !email || !phone) {
@@ -70,7 +59,7 @@ const addContact = async (name, email, phone) => {
     return;
   }
   try {
-    const id = await getNewId();
+    const id = crypto.randomUUID();
     const contacts = await listContacts();
     const newContact = { id, name, email, phone };
     contacts.push(newContact);
